@@ -1003,9 +1003,9 @@ cmd_lzma = lzma -c -z -k -9 $< > $@
 
 cfg: u-boot.cfg
 
-#quiet_cmd_cfgcheck = CFGCHK  $2
-#cmd_cfgcheck = $(srctree)/scripts/check-config.sh $2 \
-#		$(srctree)/scripts/config_whitelist.txt $(srctree)
+quiet_cmd_cfgcheck = CFGCHK  $2
+cmd_cfgcheck = $(srctree)/scripts/check-config.sh $2 \
+		$(srctree)/scripts/config_whitelist.txt $(srctree)
 
 all:		$(ALL-y)
 ifeq ($(CONFIG_DEPRECATED),y)
