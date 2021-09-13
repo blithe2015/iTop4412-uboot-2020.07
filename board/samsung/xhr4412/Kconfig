@@ -1,0 +1,12 @@
+if TARGET_XHR4412
+
+config SYS_BOARD
+	default "xhr4412"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "xhr4412"
+
+endif
