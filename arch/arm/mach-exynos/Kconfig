@@ -71,6 +71,10 @@ config TARGET_XHR4412
 	bool "Exynos4412 xhr4412 board"
 	select SUPPORT_SPL
 
+config TARGET_ITOP4412
+	bool "Exynos4412 iTop4412 board"
+	select SUPPORT_SPL
+
 config TARGET_TRATS2
 	bool "Exynos4412 Trat2 board"
 
@@ -201,6 +205,7 @@ source "board/samsung/smdk5250/Kconfig"
 source "board/samsung/smdk5420/Kconfig"
 source "board/samsung/espresso7420/Kconfig"
 source "board/samsung/xhr4412/Kconfig"
+source "board/samsung/itop4412/Kconfig"
 
 config SPL_LDSCRIPT
 	default "board/samsung/common/exynos-uboot-spl.lds" if ARCH_EXYNOS5 || ARCH_EXYNOS4
