@@ -31,12 +31,29 @@
 	.globl	reset
 	.globl	save_boot_params_ret
 	.type   save_boot_params_ret,%function
+	.globl	led_on
 #ifdef CONFIG_ARMV7_LPAE
 	.global	switch_to_hypervisor_ret
 #endif
-
+led_on:
+	ldr     r0, =0x11000100     @ GPMl2_0
+	ldr     r1, =0x00000001      @ Configurate GPM4_0<A1>GPM4_1<A2>GPM4_2<A2>GPM4_3 output
+	str     r1, [r0]
+	mov     r1, #0x01            @ light All led on
+	ldr     r0, =0x11000104      @ GPM4DAT Register
+	str     r1, [r0]
+	
+	ldr     r0, =0x11000060     @ GPMk1_1
+	ldr     r1, =0x00000010      @ Configurate GPM4_0<A1>GPM4_1<A2>GPM4_2<A2>GPM4_3 output
+	str     r1, [r0]
+	mov     r1, #0x02            @ light All led on
+	ldr     r0, =0x11000064      @ GPM4DAT Register
+	str     r1, [r0]
+	
+	mov     pc,   lr
 reset:
 	/* Allow the board to save important registers */
+	bl	led_on
 	b	save_boot_params
 save_boot_params_ret:
 #ifdef CONFIG_ARMV7_LPAE
