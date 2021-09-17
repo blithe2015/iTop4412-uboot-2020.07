@@ -783,8 +783,13 @@ static unsigned long exynos4x12_get_uart_clk(int dev_index)
 
 static unsigned long exynos4_get_mmc_clk(int dev_index)
 {
+#if defined(CONFIG_XHR4412) || defined(CONFIG_ITOP4412)
+	struct exynos4x12_clock *clk =
+		(struct exynos4x12_clock *)samsung_get_base_clock();
+#else
 	struct exynos4_clock *clk =
 		(struct exynos4_clock *)samsung_get_base_clock();
+#endif
 	unsigned long uclk, sclk;
 	unsigned int sel, ratio, pre_ratio;
 	int shift = 0;
@@ -1673,10 +1678,10 @@ unsigned long get_uart_clk(int dev_index)
 unsigned long get_mmc_clk(int dev_index)
 {
 	enum periph_id id;
-
+#if !defined(CONFIG_XHR4412) && !defined(CONFIG_ITOP4412)
 	if (cpu_is_exynos4())
 		return exynos4_get_mmc_clk(dev_index);
-
+#endif
 	switch (dev_index) {
 	case 0:
 		id = PERIPH_ID_SDMMC0;
@@ -1694,8 +1699,15 @@ unsigned long get_mmc_clk(int dev_index)
 		debug("%s: invalid MMC index %d", __func__, dev_index);
 		return -1;
 	}
-
+#if defined(CONFIG_XHR4412) || defined(CONFIG_ITOP4412)
+	if (cpu_is_exynos5()) {
+		return clock_get_periph_rate(id);
+	} else {
+		return exynos4_get_mmc_clk(dev_index);
+	}
+#else
 	return clock_get_periph_rate(id);
+#endif
 }
 
 void set_mmc_clk(int dev_index, unsigned int div)
