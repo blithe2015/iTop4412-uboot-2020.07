@@ -160,7 +160,7 @@ static void exynos5_set_ps_hold_ctrl(void)
 
 	/* Set PS-Hold high */
 	setbits_le32(&power->ps_hold_control,
-			EXYNOS_PS_HOLD_CONTROL_DATA_HIGH);/
+			EXYNOS_PS_HOLD_CONTROL_DATA_HIGH);
 }
 #else
 static void exynos4x12_set_ps_hold_ctrl(void)
