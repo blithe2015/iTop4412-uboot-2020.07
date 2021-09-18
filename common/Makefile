@@ -8,6 +8,8 @@ ifndef CONFIG_SPL_BUILD
 obj-y += init/
 obj-y += main.o
 obj-y += exports.o
+obj-$(CONFIG_XHR4412) += xhr4412/
+obj-$(CONFIG_ITOP4412) += itop4412/
 obj-$(CONFIG_HASH) += hash.o
 obj-$(CONFIG_HUSH_PARSER) += cli_hush.o
 obj-$(CONFIG_AUTOBOOT) += autoboot.o

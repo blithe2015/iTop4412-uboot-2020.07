@@ -26,7 +26,13 @@
 #include <config.h>
 #include <asm/arch/dmc.h>
 #include "common_setup.h"
+#ifdef CONFIG_XHR4412
+#include "xhr4412_setup.h"
+#elif defined(CONFIG_ITOP4412)
+#include "itop4412_setup.h"
+#else
 #include "exynos4_setup.h"
+#endif
 
 struct mem_timings mem = {
 	.direct_cmd_msr = {

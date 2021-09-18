@@ -132,6 +132,10 @@ source "drivers/w1-eeprom/Kconfig"
 
 source "drivers/watchdog/Kconfig"
 
+source "drivers/xhr4412_driver/Kconfig"
+
+source "drivers/itop4412_driver/Kconfig"
+
 config PHYS_TO_BUS
 	bool "Custom physical to bus address mapping"
 	help

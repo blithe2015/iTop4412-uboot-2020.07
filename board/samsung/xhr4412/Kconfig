@@ -9,4 +9,10 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "xhr4412"
 
+config UART_IRQ_ENABLE
+	bool "Support for uart RXTX irq"
+	default n
+	help
+	  There may be some problems.
+
 endif

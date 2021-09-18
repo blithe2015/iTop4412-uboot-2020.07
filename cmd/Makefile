@@ -10,6 +10,8 @@ obj-$(CONFIG_CMD_BOOTM) += bootm.o
 obj-y += help.o
 obj-y += version.o
 
+obj-$(CONFIG_XHR4412) += fdisk.o
+obj-$(CONFIG_ITOP4412) += fdisk.o
 # command
 obj-$(CONFIG_CMD_ACPI) += acpi.o
 obj-$(CONFIG_CMD_AES) += aes.o

@@ -137,6 +137,12 @@ typedef struct global_data {
 #if CONFIG_IS_ENABLED(WDT)
 	struct udevice *watchdog_dev;
 #endif
+#ifdef CONFIG_XHR4412
+	unsigned long xhr_flag;
+#endif
+#ifdef CONFIG_ITOP4412
+	unsigned long itop_flag;
+#endif
 } gd_t;
 #endif
 

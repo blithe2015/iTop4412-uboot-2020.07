@@ -16,7 +16,7 @@
 #define SPL_HEADER_SIZE		0
 #define FILE_PERM		(S_IRUSR | S_IWUSR | S_IRGRP \
 				| S_IWGRP | S_IROTH | S_IWOTH)
-#define SPL_HEADER		"S5PC210 HEADER  "
+#define SPL_HEADER		"ITOP4412 HEADER  " // "S5PC210 HEADER  " xhr
 /*
 * Requirement:
 * IROM code reads first 14K bytes from boot device.

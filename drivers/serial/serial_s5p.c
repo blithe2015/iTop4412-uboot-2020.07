@@ -17,6 +17,15 @@
 #include <asm/arch/uart.h>
 #include <serial.h>
 #include <clk.h>
+#ifdef CONFIG_UART_IRQ_ENABLE
+#ifdef CONFIG_XHR4412
+#include <xhr4412/common.h>
+#define UART2_IRQ_NUM (86)
+#elif defined(CONFIG_XHR4412)
+#include <itop4412/common.h>
+#define UART2_IRQ_NUM (86)
+#endif
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -59,8 +68,139 @@ static const int udivslot[] = {
 	0xffdf,
 };
 
+#ifdef CONFIG_UART_IRQ_ENABLE
+static int serial_err_check(const struct s5p_uart *const uart, int op);
+
+#define UART_BUF_SIZE 0xFF
+#define IRQ_MODEM    (1 << 3)
+#define IRQ_TXD      (1 << 2)
+#define IRQ_ERROR    (1 << 1)
+#define IRQ_RXD      (1 << 0)
+
+struct uart_fifo {
+	int h;
+	int t;
+	char buf[UART_BUF_SIZE+1];
+};
+ulongx rxcount, txcount;
+static struct uart_fifo rxfifo;
+static struct uart_fifo txfifo;
+
+static inline int is_empty(struct uart_fifo * fifo)
+{
+	if(fifo->h == fifo->t)
+		return true;
+	return false;
+}
+
+static inline int is_full(struct uart_fifo * fifo)
+{
+	int tmp;
+	tmp = (fifo->h + 1) & UART_BUF_SIZE;
+	return tmp == fifo->t;
+}
+
+static inline int queue(struct uart_fifo * fifo, const char c)
+{
+	if(is_full(fifo))
+		return false;
+
+	fifo->buf[fifo->h] = c;
+	fifo->h = (fifo->h + 1) & UART_BUF_SIZE;
+	return true;
+}
+
+static inline int dequeue(struct uart_fifo * fifo, char * c)
+{
+	if(is_empty(fifo))
+		return false;
+
+	*c = fifo->buf[fifo->t];
+	fifo->t = (fifo->t + 1) & UART_BUF_SIZE;
+	return true;
+}
+
+static inline int uart_tx_fifo_is_full(const struct s5p_uart * uart)
+{
+	return readl(&uart->ufstat) & TX_FIFO_FULL;
+}
+
+static inline void tx_irq_enable(struct s5p_uart * const uart_reg)
+{
+	uart_reg->uintm &= ~IRQ_TXD;
+}
+
+static inline void tx_irq_disable(struct s5p_uart * const uart_reg)
+{
+	uart_reg->uintm |= IRQ_TXD;
+}
+
+static int s5p_serial_irq(int irq, void * data)
+{
+	struct s5p_uart *const uart_reg = data;
+	unsigned int pending;
+	char t;
+	//static char a = 'a';
+
+	pending = uart_reg->uintp;
+
+	if (pending & IRQ_TXD)
+	{
+		while (!uart_tx_fifo_is_full(uart_reg) && dequeue(&txfifo, &t))
+		{
+			writeb(t, &uart_reg->utxh);
+			serial_err_check(uart_reg, 1);
+		}
+		
+		if(is_empty(&txfifo)){
+			tx_irq_disable(uart_reg); // disable tx irq
+		}
+
+		txcount++;
+	}
+
+	if (pending & IRQ_RXD)
+	{
+		while (readl(&uart_reg->ufstat) & RX_FIFO_COUNT_MASK)
+		{
+			if (is_full(&rxfifo))
+				break;
+			queue(&rxfifo, readb(&uart_reg->urxh) & 0xff);
+			//writeb(a++, &uart_reg->utxh);
+			//serial_err_check(uart_reg, 1);
+			//if(a > 'z') a = 'a';
+		}
+		rxcount++;
+	}
+	
+	uart_reg->uintp |= pending;
+
+	return 0;
+}
+#endif
+
 static void __maybe_unused s5p_serial_init(struct s5p_uart *uart)
 {
+#ifdef CONFIG_UART_IRQ_ENABLE
+
+	bicl(GPIO_GPA1    , (0xFF00));
+	orrl(GPIO_GPA1 + 8, (0xF0));
+
+	if (is_board_r())
+	{
+		register_irq(UART2_IRQ_NUM, s5p_serial_irq, uart);
+		writel(0x7, &uart->ufcon);
+		writel(0, &uart->umcon);
+		writel(0x3, &uart->ulcon);
+		uart->uintm = 0x8;
+		uart->uintp |= 0xF;
+		setl(ICDISER2_CPU0,(1<<22));
+		setl(ICDIPTR21_CPU0,(1<<16));
+		__set_bit_xhr_flag(__XHR_FLAG_UART_IRQ_ENABLED);
+		writel((1)|(1<<2)|(1<<7)|(1<<8)|(1<<9), &uart->ucon);
+		return;
+	}
+#endif
 	/* enable FIFOs, auto clear Rx FIFO */
 	writel(0x3, &uart->ufcon);
 	writel(0, &uart->umcon);
@@ -143,6 +283,25 @@ static int s5p_serial_getc(struct udevice *dev)
 	struct s5p_serial_platdata *plat = dev->platdata;
 	struct s5p_uart *const uart = plat->reg;
 
+#ifdef CONFIG_UART_IRQ_ENABLE
+	if (is_uart_irq_enabled()) {
+		int ret;
+		char t;
+#ifdef CONFIG_XHR4412
+		spin_lock_xhr();
+#elif defined(CONFIG_ITOP4412)
+		spin_lock_itop();
+#endif
+		ret = dequeue(&rxfifo, &t);
+#ifdef CONFIG_XHR4412
+		spin_unlock_xhr();
+#elif defined(CONFIG_ITOP4412)
+		spin_unlock_itop();
+#endif
+		return ret ? (int)t : -EAGAIN;
+	}
+#endif
+
 	if (!(readl(&uart->ufstat) & RX_FIFO_COUNT_MASK))
 		return -EAGAIN;
 
@@ -154,6 +313,26 @@ static int s5p_serial_putc(struct udevice *dev, const char ch)
 {
 	struct s5p_serial_platdata *plat = dev->platdata;
 	struct s5p_uart *const uart = plat->reg;
+
+#ifdef CONFIG_UART_IRQ_ENABLE
+	if (is_uart_irq_enabled()) {
+		int ret;
+#ifdef CONFIG_XHR4412
+		spin_lock_xhr();
+#elif defined(CONFIG_ITOP4412)
+		spin_lock_itop();
+#endif
+		ret = queue(&txfifo, ch);
+		if(ret)
+			tx_irq_enable(uart);
+#ifdef CONFIG_XHR4412
+		spin_unlock_xhr();
+#elif defined(CONFIG_ITOP4412)
+		spin_unlock_itop();
+#endif
+		return ret ? 0 : -EAGAIN;
+	}
+#endif
 
 	if (readl(&uart->ufstat) & TX_FIFO_FULL)
 		return -EAGAIN;
@@ -169,6 +348,15 @@ static int s5p_serial_pending(struct udevice *dev, bool input)
 	struct s5p_serial_platdata *plat = dev->platdata;
 	struct s5p_uart *const uart = plat->reg;
 	uint32_t ufstat = readl(&uart->ufstat);
+
+#ifdef CONFIG_UART_IRQ_ENABLE
+	if (is_uart_irq_enabled()) {
+		if (input)
+			return !is_full(&rxfifo);
+		else
+			return !is_full(&txfifo);
+	}
+#endif
 
 	if (input)
 		return (ufstat & RX_FIFO_COUNT_MASK) >> RX_FIFO_COUNT_SHIFT;

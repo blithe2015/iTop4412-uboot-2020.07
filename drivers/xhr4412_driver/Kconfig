@@ -1,0 +1,38 @@
+menu "xhr4412 Drivers Support"
+
+config XHR_DRV_LED
+	bool "Enable xhr4412 led_uclass.c"
+	default y if TARGET_XHR4412
+	depends on TARGET_XHR4412
+	help
+	  xhr4412 board's led driver
+
+config XHR_DRV_LED_GPIO
+	bool "led_gpio.c"
+	default y
+	depends on XHR_DRV_LED
+
+config XHR_DRV_BTN
+	bool "Enable xhr4412 btn_uclass.c"
+	depends on TARGET_XHR4412
+	help
+	  xhr4412 board's button driver
+
+config XHR_DRV_BTN_GPIO
+	bool "btn_gpio.c"
+	default y
+	depends on XHR_DRV_BTN
+
+config USB_ETHER_DM9601
+	bool "Enable xhr4412 usb ether dm9601"
+	default y
+	depends on TARGET_XHR4412
+	depends on DM_USB
+	depends on DM_ETH
+	depends on USB_HOST_ETHER
+	depends on CMD_NET
+	depends on CMD_USB
+	help
+	  xhr4412 board's dm9601 driver
+
+endmenu

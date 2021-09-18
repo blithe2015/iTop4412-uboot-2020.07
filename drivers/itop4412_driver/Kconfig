@@ -1,0 +1,38 @@
+menu "itop4412 Drivers Support"
+
+config ITOP_DRV_LED
+	bool "Enable itop4412 led_uclass.c"
+	default y if TARGET_ITOP4412
+	depends on TARGET_ITOP4412
+	help
+	  itop4412 board's led driver
+
+config ITOP_DRV_LED_GPIO
+	bool "led_gpio.c"
+	default y
+	depends on ITOP_DRV_LED
+
+config ITOP_DRV_BTN
+	bool "Enable itop4412 btn_uclass.c"
+	depends on TARGET_ITOP4412
+	help
+	  itop4412 board's button driver
+
+config ITOP_DRV_BTN_GPIO
+	bool "btn_gpio.c"
+	default y
+	depends on ITOP_DRV_BTN
+
+config USB_ETHER_DM9601
+	bool "Enable itop4412 usb ether dm9601"
+	default y
+	depends on TARGET_ITOP4412
+	depends on DM_USB
+	depends on DM_ETH
+	depends on USB_HOST_ETHER
+	depends on CMD_NET
+	depends on CMD_USB
+	help
+	  itop4412 board's dm9601 driver
+
+endmenu

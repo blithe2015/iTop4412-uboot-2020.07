@@ -691,7 +691,7 @@ static int sdhci_deferred_probe(struct udevice *dev)
 	return 0;
 }
 
-static int sdhci_get_cd(struct udevice *dev)
+static __maybe_unused int sdhci_get_cd(struct udevice *dev)
 {
 	struct mmc *mmc = mmc_get_mmc_dev(dev);
 	struct sdhci_host *host = mmc->priv;
@@ -724,7 +724,9 @@ static int sdhci_get_cd(struct udevice *dev)
 const struct dm_mmc_ops sdhci_ops = {
 	.send_cmd	= sdhci_send_command,
 	.set_ios	= sdhci_set_ios,
+#if !defined(CONFIG_XHR4412) && !defined(CONFIG_ITOP4412)
 	.get_cd		= sdhci_get_cd,
+#endif
 	.deferred_probe	= sdhci_deferred_probe,
 #ifdef MMC_SUPPORTS_TUNING
 	.execute_tuning	= sdhci_execute_tuning,

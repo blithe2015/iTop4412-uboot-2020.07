@@ -314,6 +314,8 @@ config PLATFORM_ELFENTRY
 	default "__start" if MIPS
 	default "_start"
 
+source "common/itop4412/Kconfig"
+
 endmenu		# General setup
 
 menu "Boot images"

@@ -276,17 +276,28 @@ not_used:
 	bad_save_user_regs
 	bl	do_not_used
 
-
 	.align	5
 irq:
-	get_bad_stack
-	bad_save_user_regs
+	get_irq_stack
+	irq_save_user_regs
 	bl	do_irq
+	irq_restore_user_regs
 
 	.align	5
 fiq:
 	get_bad_stack
 	bad_save_user_regs
 	bl	do_fiq
+
+
+/* IRQ stack memory (calculated at run-time) + 8 bytes */
+.globl IRQ_STACK_START
+IRQ_STACK_START:
+#ifdef IRAM_BASE_ADDR
+	.word   IRAM_BASE_ADDR + 0x20
+#else
+	.word	0x02060000 // irq stack
+#endif
+
 
 #endif	/* CONFIG_SPL_BUILD */

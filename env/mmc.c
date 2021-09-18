@@ -18,12 +18,21 @@
 #include <part.h>
 #include <search.h>
 #include <errno.h>
+#if defined(CONFIG_XHR4412) || defined(CONFIG_ITOP4412)
+#include <asm/arch/power.h>
+#if defined(CONFIG_XHR4412)
+#include <xhr4412/partition.h>
+#else
+#include <itop4412/partition.h>
+#endif
+#endif
 
 #define __STR(X) #X
 #define STR(X) __STR(X)
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#if !defined(CONFIG_XHR4412) && !defined(CONFIG_ITOP4412)
 #if CONFIG_IS_ENABLED(OF_CONTROL)
 static inline int mmc_offset_try_partition(const char *str, s64 *val)
 {
@@ -118,6 +127,28 @@ __weak int mmc_get_env_dev(void)
 {
 	return CONFIG_SYS_MMC_ENV_DEV;
 }
+#else
+__weak int mmc_get_env_addr(struct mmc *mmc, int copy, u32 *env_addr)
+{
+	*env_addr = ENV_BLK_START << BLK_SHIFT;
+
+	return 0;
+}
+
+__weak int mmc_get_env_dev(void)
+{
+#if 0
+	unsigned int boot_mode;
+
+	boot_mode = get_boot_mode();
+	if (boot_mode == BOOT_MODE_SD)
+		return 1;
+	else if (boot_mode == BOOT_MODE_EMMC_SD)
+		return 0;
+#endif
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_SYS_MMC_ENV_PART
 __weak uint mmc_get_env_part(struct mmc *mmc)

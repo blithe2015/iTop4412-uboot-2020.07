@@ -13,7 +13,7 @@ always := $(hostprogs-y)
 #   warning: dereferencing type-punned pointer will break strict-aliasing rules
 #
 # TODO:
-# Fix the root cause in tools/mkorigenspl.c and delete the following work-around
+# Fix the root cause in tools/mkxhr4412spl.c and delete the following work-around
 $(obj)/tools/mkxhr4412spl: HOSTCFLAGS:=$(filter-out -O2,$(HOSTCFLAGS))
 else
 obj-y	+= xhr4412.o

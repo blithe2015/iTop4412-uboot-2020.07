@@ -11,10 +11,10 @@
 #include <configs/exynos4-common.h>
 
 /* High Level Configuration Options */
-#define CONFIG_EXYNOS4210		1	/* which is a EXYNOS4210 SoC */
+#define CONFIG_EXYNOS4412		1	/* which is a EXYNOS4412 SoC */
 #define CONFIG_ITOP4412			1	/* working with ORIGEN*/
 
-/* ORIGEN has 4 bank of DRAM */
+/* iTop4412 has 4 bank of DRAM */
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
 #define PHYS_SDRAM_1			CONFIG_SYS_SDRAM_BASE
 #define SDRAM_BANK_SIZE			(256 << 20)	/* 256 MB */
@@ -22,7 +22,10 @@
 /* memtest works on */
 #define CONFIG_SYS_LOAD_ADDR		(CONFIG_SYS_SDRAM_BASE + 0x3E00000)
 
-#define CONFIG_MACH_TYPE		MACH_TYPE_ORIGEN
+#define CONFIG_MACH_TYPE		MACH_TYPE_ITOP4412
+
+/* USB */
+#define CONFIG_USB_EHCI_EXYNOS
 
 /* select serial console configuration */
 
@@ -45,17 +48,38 @@
 	"loadaddr=0x40007000\0" \
 	"rdaddr=0x48000000\0" \
 	"kerneladdr=0x40007000\0" \
+	"dtbaddr=0x41000000\0" \
 	"ramdiskaddr=0x48000000\0" \
+	"fastbootbuf=" __stringify(CONFIG_FASTBOOT_BUF_ADDR) "\0" \
 	"console=ttySAC2,115200n8\0" \
 	"mmcdev=0\0" \
 	"bootenv=uEnv.txt\0" \
 	"loadbootenv=load mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from mmc ...; " \
 		"env import -t $loadaddr $filesize\0" \
-        "loadbootscript=load mmc ${mmcdev} ${loadaddr} boot.scr\0" \
-        "bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
-                "source ${loadaddr}\0"
+		"loadbootscript=load mmc ${mmcdev} ${loadaddr} boot.scr\0" \
+		"bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
+				"source ${loadaddr}\0" \
+	"find_defdtb=" \
+		"if env exists defdtb; then true; " \
+		"else setenv defdtb dtb; fi;\0" \
+	"ipaddr=192.168.177.132\0" \
+	"ethaddr=08:90:90:90:90:90\0" \
+	"serverip=192.168.177.128\0" \
+	"path_uboot=/home/xhr/iTop4412/xhr4412/uboot/xhr4412-uboot-2020.07/xhr4412-uboot.bin\0" \
+	"path_kernel=/home/xhr/iTop4412/xhr4412/linux/xhr4412-linux-5.8.5/xhr4412-uImage.bin\0" \
+	"path_dtb=/home/xhr/iTop4412/xhr4412/linux/xhr4412-linux-5.8.5/xhr4412-dts.bin\0" \
+	"path_system=/home/xhr/iTop4412/xhr4412/rootfs/xhr4412-system.bin\0" \
+	"getuboot=nfs ${fastbootbuf} ${serverip}:${path_uboot}; mmcpart write bootloader ${fastbootbuf}\0" \
+	"getdtb=nfs ${fastbootbuf} ${serverip}:${path_dtb}; run find_defdtb; mmcpart write ${defdtb} ${fastbootbuf}\0" \
+	"getkernel=nfs ${fastbootbuf} ${serverip}:${path_kernel}; mmcpart write kernel ${fastbootbuf}\0" \
+	"getsystem=nfs ${fastbootbuf} ${serverip}:${path_system}; mmcpart write system ${fastbootbuf}\0" \
+	"usb=usb start; usb reset\0"
 #define CONFIG_BOOTCOMMAND \
+	"mmcpart read kernel ${kerneladdr}; run find_defdtb; " \
+	"mmcpart read ${defdtb} ${dtbaddr}; bootm ${kerneladdr} - ${dtbaddr}"
+
+/*#define CONFIG_BOOTCOMMAND \
 	"if mmc rescan; then " \
 		"echo SD/MMC found on device ${mmcdev};" \
 		"if run loadbootenv; then " \
@@ -70,7 +94,7 @@
 			"run bootscript; " \
 		"fi; " \
 	"fi;" \
-	"load mmc ${mmcdev} ${loadaddr} uImage; bootm ${loadaddr} "
+	"load mmc ${mmcdev} ${loadaddr} uImage; bootm ${loadaddr} "*/
 
 #define CONFIG_CLK_1000_400_200
 
@@ -79,15 +103,16 @@
 
 #define CONFIG_SYS_MMC_ENV_DEV		0
 #define RESERVE_BLOCK_SIZE		(512)
-#define BL1_SIZE			(16 << 10) /*16 K reserved for BL1*/
+#define BL1_SIZE			(8 << 10)  /*8 K reserved for BL1*/
+#define SPL_SIZE			(16 << 10) /*8 K reserved for SPL*/
 
 #define CONFIG_SPL_MAX_FOOTPRINT	(14 * 1024)
 
 #define CONFIG_SYS_INIT_SP_ADDR		0x02040000
 
 /* U-Boot copy size from boot Media to DRAM.*/
-#define COPY_BL2_SIZE		0x80000
-#define BL2_START_OFFSET	((CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)/512)
+#define COPY_BL2_SIZE		0x80000 // 512 KB
+#define BL2_START_OFFSET	((RESERVE_BLOCK_SIZE + BL1_SIZE + SPL_SIZE)/512)
 #define BL2_SIZE_BLOC_COUNT	(COPY_BL2_SIZE/512)
 
 #endif	/* __CONFIG_H */

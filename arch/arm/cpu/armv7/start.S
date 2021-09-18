@@ -53,7 +53,6 @@ led_on:
 	mov     pc,   lr
 reset:
 	/* Allow the board to save important registers */
-	bl	led_on
 	b	save_boot_params
 save_boot_params_ret:
 #ifdef CONFIG_ARMV7_LPAE

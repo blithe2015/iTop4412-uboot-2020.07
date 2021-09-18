@@ -198,6 +198,7 @@ void set_ps_hold_ctrl(void)
 	if (cpu_is_exynos5())
 		exynos5_set_ps_hold_ctrl();
 #endif
+	else while (1) ;
 }
 
 
@@ -246,6 +247,7 @@ static uint32_t exynos4_get_reset_status(void)
 	struct exynos4_power *power =
 		(struct exynos4_power *)samsung_get_base_power();
 #endif
+
 	return power->inform1;
 }
 

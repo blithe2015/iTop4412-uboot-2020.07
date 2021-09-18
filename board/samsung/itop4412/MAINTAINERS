@@ -1,5 +1,5 @@
 ORIGEN BOARD
-M:	Chander Kashyap <k.chander@samsung.com>
+M:	Blithe <blithe201588@gmail.com>
 S:	Maintained
 F:	board/samsung/itop4412/
 F:	include/configs/itop4412.h

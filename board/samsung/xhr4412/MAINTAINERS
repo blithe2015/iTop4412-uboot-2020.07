@@ -1,5 +1,5 @@
-ORIGEN BOARD
-M:	Chander Kashyap <k.chander@samsung.com>
+XHR4412 BOARD
+M:	Haoruo Xiang <934786601@qq.com>
 S:	Maintained
 F:	board/samsung/xhr4412/
 F:	include/configs/xhr4412.h

@@ -1,32 +1,100 @@
-// SPDX-License-Identifier: GPL-2.0+
 /*
- * Samsung's Exynos4210 based Origen board device tree source
+ * XHR's Exynos4412 based xhr board device tree source
  *
- * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+ * Copyright (c) 2018 Samsung Electronics Co., Ltd.
  *		http://www.samsung.com
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 /dts-v1/;
-#include "skeleton.dtsi"
-#include "exynos4210.dtsi"
+#include "exynos4412.dtsi"
 
 / {
-	model = "Insignal Origen evaluation board based on Exynos4210";
-	compatible = "insignal,origen", "samsung,exynos4210";
-
-	chosen {
-		bootargs ="";
-	};
+	model = "Insignal xhr4412 evaluation board based on Exynos4412";
+	compatible = "insignal,xhr4412", "samsung,exynos4412";
 
 	aliases {
-		serial0 = "/serial@13800000";
+		i2c0 = "/i2c@13860000";
+		i2c1 = "/i2c@13870000";
+		i2c2 = "/i2c@13880000";
+		i2c3 = "/i2c@13890000";
+		i2c4 = "/i2c@138a0000";
+		i2c5 = "/i2c@138b0000";
+		i2c6 = "/i2c@138c0000";
+		i2c7 = "/i2c@138d0000";
+		serial0 = "/serial@13820000";
 		console = "/serial@13820000";
+		mmc0 = &mshc_0;
+		mmc1 = &sdhci2;
 	};
+
+	chosen {
+		stdout-path = "serial2:460800n8";
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x40000000 0x40000000>;
+	};
+
+	/*serial@13820000 {
+		status = "okay";
+	};*/
+
+	ehci@12580000 {
+		compatible = "samsung,exynos-ehci";
+		reg = <0x12580000 0x100>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		status = "okay";
+		/* In order to reset USB ethernet */
+		samsung,vbus-gpio = <&gpc0 1 0>;
+		phy {
+			compatible = "samsung,exynos-usb-phy";
+			reg = <0x125B0000 0x100>;
+		};
+	};
+
+	emmc-reset {
+		compatible = "samsung,emmc-reset";
+		reset-gpio = <&gpk1 2 0>;
+	};
+
+	xhr_led_1 {
+		compatible = "xhr-led-gpio";
+		led_name = "led_1";
+		reg_addr = <0x11000100>;
+		position = <0>; // GPL2_0
+	};
+
+	xhr_led_2 {
+		compatible = "xhr-led-gpio";
+		led_name = "led_2";
+		reg_addr = <0x11000060>;
+		position = <1>; // GPK1_1
+	};
+
+/*
+	usb-phy-reset {
+		compatible = "smsc,usb-phy-reset";
+		reset-gpio = <&gpm2 4 GPIO_ACTIVE_LOW>;
+	};*/
 };
 
 &sdhci2 {
 	samsung,bus-width = <4>;
-	samsung,timing = <1 2 3>;
+	/* cd-gpios = <&gpx0 7 0>; */
 	cd-gpios = <&gpk2 2 0>;
+	status = "okay";
+};
+
+&mshc_0 {
+	samsung,bus-width = <4>;
+	samsung,timing = <2 1 0>;
+	fifoth_val = <0x203f0040>;
+	bus_hz = <400000000>;
+	div = <0x3>;
+	index = <4>;
 	status = "okay";
 };

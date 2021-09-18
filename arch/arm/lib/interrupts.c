@@ -25,7 +25,11 @@
 #include <asm/proc-armv/ptrace.h>
 #include <asm/ptrace.h>
 #include <asm/u-boot-arm.h>
-
+#ifdef CONFIG_XHR4412
+#include <xhr4412/common.h>
+#elif defined CONFIG_ITOP4412
+#include <itop4412/common.h>
+#endif
 DECLARE_GLOBAL_DATA_PTR;
 
 int interrupt_init(void)
@@ -196,10 +200,16 @@ void do_fiq (struct pt_regs *pt_regs)
 
 void do_irq (struct pt_regs *pt_regs)
 {
+#if !defined(CONFIG_XHR4412) && !defined(CONFIG_ITOP4412)
 	efi_restore_gd();
 	printf ("interrupt request\n");
 	fixup_pc(pt_regs, -8);
 	show_regs (pt_regs);
 	show_efi_loaded_images(pt_regs);
 	bad_mode ();
+#elif defined(CONFIG_XHR4412)
+	xhr4412_do_irq(pt_regs);
+#else
+	itop4412_do_irq(pt_regs);
+#endif
 }

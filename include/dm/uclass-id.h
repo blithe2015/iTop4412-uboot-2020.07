@@ -121,6 +121,8 @@ enum uclass_id {
 	UCLASS_W1,		/* Dallas 1-Wire bus */
 	UCLASS_W1_EEPROM,	/* one-wire EEPROMs */
 	UCLASS_WDT,		/* Watchdog Timer driver */
+	UCLASS_XHR_LED,	/* xhr4412 led */
+	UCLASS_ITOP_LED,	/* itop4412 led */
 
 	UCLASS_COUNT,
 	UCLASS_INVALID = -1,

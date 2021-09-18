@@ -68,6 +68,11 @@
 #if defined(CONFIG_GPIO_HOG)
 #include <asm/gpio.h>
 #endif
+#ifdef CONFIG_XHR4412
+#include <xhr4412/common.h>
+#elif defined(CONFIG_ITOP4412)
+#include <itop4412/common.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -667,6 +672,11 @@ static int run_main_loop(void)
  * TODO: perhaps reset the watchdog in the initcall function after each call?
  */
 static init_fnc_t init_sequence_r[] = {
+#ifdef CONFIG_XHR4412
+	xhr4412_board_init,
+#elif defined(CONFIG_ITOP4412)
+	itop4412_board_init,
+#endif
 	initr_trace,
 	initr_reloc,
 	/* TODO: could x86/PPC have this also perhaps? */
@@ -719,6 +729,11 @@ static init_fnc_t init_sequence_r[] = {
 #endif
 	initr_dm_devices,
 	stdio_init_tables,
+#ifdef CONFIG_XHR_DRV_LED
+	xhr_led_uclass_init,
+#elif defined(CONFIG_ITOP_DRV_LED)
+	itop_led_uclass_init,
+#endif
 	initr_serial,
 	initr_announce,
 #if CONFIG_IS_ENABLED(WDT)
@@ -858,6 +873,11 @@ static init_fnc_t init_sequence_r[] = {
 #endif
 #if defined(CONFIG_M68K) && defined(CONFIG_BLOCK_CACHE)
 	blkcache_init,
+#endif
+#ifdef CONFIG_XHR4412
+	xhr4412_partition_init,
+#elif defined(CONFIG_ITOP4412)
+	itop4412_partition_init,
 #endif
 	run_main_loop,
 };

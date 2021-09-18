@@ -231,7 +231,7 @@ int do_lowlevel_init(void)
 #endif
 		mem_ctrl_init(actions & DO_MEM_RESET);
 
-#if !defined(CONFIG_XHR4412)|| !defined(CONFIG_ITOP4412)
+#if !defined(CONFIG_XHR4412) && !defined(CONFIG_ITOP4412)
 		tzpc_init();
 #endif
 	}
