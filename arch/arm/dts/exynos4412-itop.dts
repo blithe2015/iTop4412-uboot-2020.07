@@ -29,7 +29,7 @@
 	};
 
 	chosen {
-		stdout-path = "serial2:460800n8";
+		stdout-path = "serial2:115200n8";
 	};
 
 	memory@40000000 {
