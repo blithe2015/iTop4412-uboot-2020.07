@@ -92,3 +92,5 @@ GTAGS
 *.orig
 *~
 \#*#
+
+!bl1/*.bin
