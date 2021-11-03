@@ -1,0 +1,11 @@
+# SD
+## format SD card
+1. Clear 1M space
+dd if=/dev/zero of=$DRIVE bs=1024 count=1024
+2. Burn BL1
+dd iflag=dsync oflag=dsync if=E4412_N.bl1.bin of=/dev/xxx seek=1
+3. Burn BL2
+dd iflag=dsync oflag=dsync if=bl2.bin of=/dev/xxx seek=17
+4. Burn BL3
+dd iflag=dsync oflag=dsync if=u-boot.bin of=/dev/xxx seek=81
+5. Partitioning from address 1024
